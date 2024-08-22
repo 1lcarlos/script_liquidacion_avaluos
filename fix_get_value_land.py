@@ -1,7 +1,9 @@
 import pandas as pd
 import psycopg2
 import re
+import os
 from decimal import Decimal
+from datetime import datetime
 
 """
 Script para Liquidar el Avalúo
@@ -432,21 +434,21 @@ def get_query_value_build(town, land_number_tuple):
                 WHEN edad > 500 and es_anexo = 1 THEN 0.752
                 --- Fito Corvini
                 WHEN fc.clase = 1 and es_anexo = 0 and vida_util != 0
-                	THEN (0.0050*(((edad/vida_util)*100)^2)+0.5001*((edad/vida_util)*100)-0.0071)/100
+                	THEN (0.0050*(((edad::float/vida_util)*100)^2)+0.5001*((edad::float/vida_util)*100)-0.0071)/100
                 WHEN fc.clase = 1.5 and es_anexo = 0 and vida_util != 0
-                	THEN (0.0050*(((edad/vida_util)*100)^2)+0.4998*((edad/vida_util)*100)+0.0262)/100
+                	THEN (0.0050*(((edad::float/vida_util)*100)^2)+0.4998*((edad::float/vida_util)*100)+0.0262)/100
                 WHEN fc.clase = 2 and es_anexo = 0 and vida_util != 0
-                	THEN  (0.0049*(((edad/vida_util)*100)^2)+0.4861*((edad/vida_util)*100)+2.5407)/100
+                	THEN  (0.0049*(((edad::float/vida_util)*100)^2)+0.4861*((edad::float/vida_util)*100)+2.5407)/100
                 WHEN fc.clase = 2.5  and es_anexo = 0  and vida_util != 0
-                	THEN ( 0.0046*(((edad/vida_util)*100)^2)+0.4581*((edad/vida_util)*100)+8.1068)/100
+                	THEN ( 0.0046*(((edad::float/vida_util)*100)^2)+0.4581*((edad::float/vida_util)*100)+8.1068)/100
                 WHEN fc.clase = 3 and es_anexo = 0 and vida_util != 0
-                	THEN  (0.0041*(((edad/vida_util)*100)^2)+0.4092*((edad/vida_util)*100)+18.1041)/100
+                	THEN  (0.0041*(((edad::float/vida_util)*100)^2)+0.4092*((edad::float/vida_util)*100)+18.1041)/100
                 WHEN fc.clase = 3.5 and es_anexo = 0 	and vida_util != 0
-                	THEN  (0.0033*(((edad/vida_util)*100)^2)+0.3341*((edad/vida_util)*100)+33.1990)/100
+                	THEN  (0.0033*(((edad::float/vida_util)*100)^2)+0.3341*((edad::float/vida_util)*100)+33.1990)/100
                 WHEN fc.clase = 4 and es_anexo = 0 	and vida_util != 0
-                	THEN  (0.0023*(((edad/vida_util)*100)^2)+0.2400*((edad/vida_util)*100)+52.5274)/100
+                	THEN  (0.0023*(((edad::float/vida_util)*100)^2)+0.2400*((edad::float/vida_util)*100)+52.5274)/100
                 WHEN fc.clase = 4.5 and es_anexo = 0 	and vida_util != 0
-                	THEN (0.0012*(((edad/vida_util)*100)^2)+0.1275*((edad/vida_util)*100)+75.1530)/100
+                	THEN (0.0012*(((edad::float/vida_util)*100)^2)+0.1275*((edad::float/vida_util)*100)+75.1530)/100
                 ELSE 0
             END as depreciation
         FROM
@@ -925,15 +927,23 @@ def main(town, number_land_list_tuple):
 
 
 
-
-
-    print("Save file in " + "{}/{}_reporte_liquidacion.csv".format(path, town))
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name_csv = "{}_reporte_liquidacion_{}.csv".format(town, current_time)
+    file_name_xlsx = "{}_reporte_liquidacion_{}.xlsx".format(town, current_time)
+    file_path_csv = os.path.join(path, file_name_csv)
+    file_path_xlsx = os.path.join(path, file_name_xlsx)
     
-    value_land.to_excel("{}/{}_reporte_liquidacion.xlsx".format(path, town), index=False)
+    value_land_organizado.to_csv(file_path_csv, index=False)
+    value_land.to_excel(file_path_xlsx, index=False)
+""" 
+    print("Save file in " + "{}/{}_reporte_liquidacion.csv".format(path, town , current_time))   
+    
+    
+    value_land.to_excel("{}/{}_reporte_liquidacion.xlsx".format(path, town, current_time), index=False)
 
-    value_land_organizado.to_csv("{}/{}_reporte_liquidacion.csv".format(path, town), index=False)
+    value_land_organizado.to_csv("{}/{}_reporte_liquidacion.csv".format(path, town, current_time), index=False)
 
-
+ """
 for town_data in towns:
     town = town_data["town"]
     number_land_list_tuple = get_number_land_list_tuple_string(town)
